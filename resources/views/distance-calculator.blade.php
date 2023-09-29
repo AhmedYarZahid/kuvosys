@@ -16,7 +16,7 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="/">
                     Distance Calculator
                 </a>
             </li>
@@ -42,7 +42,7 @@
                     <input name="to" id="to" />
                 </div>
                 <div class="col-md-4 col-lg-2">
-                    <button class="btn btn-secondary w-50" onclick="findDistance()">Find</button>
+                    <button class="btn btn-secondary w-50 find-distance" onclick="findDistance()">Find</button>
                 </div>
             </div>
         </div>

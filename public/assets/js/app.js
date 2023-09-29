@@ -67,8 +67,6 @@ function findDistance() {
     if(fromAddress !== '' && toAddress !== '') {
         removeMarkers();
 
-        var fromAddressPoints;
-
         geocoder.geocode({
             'address': fromAddress
         }, function(results, status) {
@@ -76,11 +74,9 @@ function findDistance() {
             if (status == google.maps.GeocoderStatus.OK) {
                 var latitude = results[0].geometry.location.lat();
                 var longitude = results[0].geometry.location.lng();
-                fromAddressPoints = new google.maps.LatLng(latitude, longitude);
                 placeMarker({lat: latitude, lng: longitude})
             }
         });
-        var toAddressPoints;
 
         geocoder.geocode({
             'address': toAddress
@@ -89,7 +85,6 @@ function findDistance() {
             if (status == google.maps.GeocoderStatus.OK) {
                 var latitude = results[0].geometry.location.lat();
                 var longitude = results[0].geometry.location.lng();
-                toAddressPoints = new google.maps.LatLng(latitude, longitude);
                 placeMarker({lat: latitude, lng: longitude});
             }
         });

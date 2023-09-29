@@ -14,5 +14,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('find-distance');
+    return redirect('/distance-calculator');
+});
+
+Route::get('/distance-calculator', function () {
+    return view('distance-calculator');
 });

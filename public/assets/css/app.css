@@ -18,7 +18,7 @@ span#distanceDetails {
 }
 
 .navbar {
-    background-color: #c13858!important;
+    background-color: #d01e48!important;
 }
 
 .navbar-icon-top .navbar-nav .nav-link > .fa {
@@ -132,5 +132,11 @@ span#distanceDetails {
 
     .navbar-icon-top.navbar-expand-xl .navbar-nav .nav-link > .fa > .badge {
         top: -7px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1275px) {
+    .find-distance {
+        margin-left: 65px;
     }
 }
