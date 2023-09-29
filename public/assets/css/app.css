@@ -4,6 +4,19 @@
     width: 100px;
 }
 
+.distance-calculator-fields{
+    padding: 20px 20px 0 20px;
+}
+
+#map {
+    height: 500px;
+    width: 100%;
+}
+
+span#distanceDetails {
+    padding-top: 20px;
+}
+
 .navbar {
     background-color: #c13858!important;
 }
