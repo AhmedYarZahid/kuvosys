@@ -141,11 +141,36 @@ function calculateAndDisplayRoute() {
                 directionsDisplay.setMap(map); // show the route on map
                 directionsDisplay.setOptions( { suppressMarkers: true } );
                 var directionsData = response.routes[0].legs[0]; // get data about the mapped route
-                $('span#distanceDetails').html('<b>Travel Distance:</b> ' + directionsData.distance.text + '<br> <b>Estimated Time Duration:</b> ' + directionsData.duration.text);
+                console.log(directionsData);
+
+                var distanceText = directionsData.distance.text;
+                var unit = distanceText.split(' ')[1];
+                var distanceValue = parseFloat(distanceText.replace(/,/g, ''));
+                var convertedDistance = convertDistance(distanceValue, unit);
+                $('span#distanceDetails').html('<b>Travel Distance:</b> ' + (unit === "km" ? (directionsData.distance.text + ", " + convertedDistance) : (convertedDistanceconvertedDistance + ", " + directionsData.distance.text)) + '<br> <b>Estimated Time Duration:</b> ' + directionsData.duration.text);
             } else {
                 directionsDisplay.setMap(null);
                 alert('Directions request from ' + start.toUrlValue(6) + ' to ' + end.toUrlValue(6) + ' failed: ' + status + '.');
             }
         });
+    }
+}
+
+/**
+ * get km <=> mi
+ *
+ * @param distance
+ * @param unit
+ * @returns {string}
+ */
+function convertDistance(distance, unit) {
+    if (unit === 'km') {
+        var miles = distance * 0.621371;
+        return miles.toFixed(2) + ' mi';
+    } else if (unit === 'mi') {
+        var kilometers = distance * 1.60934;
+        return kilometers.toFixed(2) + ' km';
+    } else {
+        return 'Invalid unit: ' + unit;
     }
 }
