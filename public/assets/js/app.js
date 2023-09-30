@@ -141,8 +141,6 @@ function calculateAndDisplayRoute() {
                 directionsDisplay.setMap(map); // show the route on map
                 directionsDisplay.setOptions( { suppressMarkers: true } );
                 var directionsData = response.routes[0].legs[0]; // get data about the mapped route
-                console.log(directionsData);
-
                 var distanceText = directionsData.distance.text;
                 var unit = distanceText.split(' ')[1];
                 var distanceValue = parseFloat(distanceText.replace(/,/g, ''));
