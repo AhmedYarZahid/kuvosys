@@ -230,7 +230,7 @@ function submitCommute() {
                 link.click();
                 document.body.removeChild(link);
             } else {
-                $("#amountToPay").text("Please pay " + parsedJSON.charge + " USD amount to proceed.");
+                $("#amountToPay").html("Please pay <b>" + parsedJSON.charge + " USD</b> amount to proceed.");
                 $("#commutePaymentModal").modal("show");
             }
         },
