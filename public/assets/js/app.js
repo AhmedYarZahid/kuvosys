@@ -16,6 +16,12 @@ var markers = [];
 var directionsDisplay;
 
 /**
+ * commute payment modal original content
+ */
+var commutePaymentModalOriginalContent;
+
+
+/**
  * initialize map, centered at users' location
  */
 function initMap() {
@@ -172,3 +178,168 @@ function convertDistance(distance, unit) {
         return 'Invalid unit: ' + unit;
     }
 }
+
+$(document).ready(function() {
+    /**
+     * handle commute file change
+     */
+    $('#commuteFile').bind('change', function () {
+        var filename = $("#commuteFile").val();
+        if (/^\s*$/.test(filename)) {
+            $(".commute-calculator .file-upload").removeClass('active');
+            $(".commute-calculator #noFile").text("No file chosen...");
+        }
+        else {
+            $(".commute-calculator .file-upload").addClass('active');
+            $(".commute-calculator #noFile").text(filename.replace("C:\\fakepath\\", ""));
+        }
+    });
+
+    commutePaymentModalOriginalContent = $('#commutePaymentModal').html();
+});
+
+/**
+ * submit commute file
+ */
+function submitCommute() {
+    loadStripeModal();
+    var formData = new FormData(document.getElementById('commuteForm'));
+    $.ajax({
+        url: '/process-commute',
+        headers: {'X-CSRF-TOKEN': $('#commuteForm meta[name="csrf-token"]').attr('content')},
+        before: $('#cover-spin').show(0),
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+            $('#cover-spin').hide();
+            var parsedJSON;
+            try {
+                parsedJSON = JSON.parse(response);
+            } catch (error) {
+                parsedJSON = null;
+            }
+            if(parsedJSON === null) {
+                var link = document.createElement('a');
+                link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response);
+                link.download = 'output_file.csv';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                $("#amountToPay").text("Please pay " + parsedJSON.charge + " USD amount to proceed.");
+                $("#commutePaymentModal").modal("show");
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#cover-spin').hide();
+            var errorMessage = JSON.parse(xhr.responseText).error;
+            alert("Error: " + errorMessage);
+        }
+    });
+}
+
+/**
+ * reload stripe modal
+ */
+function loadStripeModal() {
+    $('#commutePaymentModal').html(commutePaymentModalOriginalContent);
+    loadStripe();
+}
+
+/**
+ * submit payment
+ */
+function submitPayment() {
+    $("#commutePaymentForm").submit()
+}
+
+/**
+ * load stripe
+ */
+function loadStripe() {
+    var stripe = Stripe(stripe_key);
+    var elements = stripe.elements();
+    var cardElement = elements.create('card');
+    cardElement.mount('#cardElement');
+    var form = $('#commutePaymentForm');
+    var errorElement = $('#cardErrors');
+    form.on('submit', function(event) {
+        event.preventDefault();
+
+        stripe.createToken(cardElement).then(function(result) {
+            if (result.error) {
+                errorElement.text(result.error.message);
+            } else {
+                stripeTokenHandler(result.token);
+            }
+        });
+    });
+}
+
+/**
+ * stripe token handler, carries the file too
+ *
+ * @param token
+ */
+function stripeTokenHandler(token) {
+    var form = $('#commutePaymentForm');
+    var commuteForm = $('#commuteForm')[0];
+    var formData = new FormData(commuteForm);
+    formData.append('stripeToken', token.id);
+    $('#cover-spin').show();
+    $.ajax({
+        type: 'POST',
+        url: form.attr('action'), // Assuming your form has the correct action URL
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+            $('#cover-spin').hide();
+            var link = document.createElement('a');
+            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response);
+            link.download = 'output_file.csv';
+            link.textContent = "Download";
+            $(".submit-payment-btn").hide();
+            $("#commutePaymentModal .modal-title").html("<b>Payment Successful!</b>")
+            var message = "Download your file by clicking on the link below or send it to an email address: <form id='commuteEmailForm'><input id='customerEmailAddress'> <button type='button' class='btn btn-primary' onclick='sendCommuteFile($(\"#customerEmailAddress\").val(), " + JSON.stringify(response) + ")'>Send</button></form>";
+            $("#commutePaymentModal .modal-body").html(message).append(link);
+        },
+        error: function(xhr, status, error) {
+            $('#cover-spin').hide();
+            var errorMessage = JSON.parse(xhr.responseText).error;
+            alert("Error: " + errorMessage);
+        }
+    });
+}
+
+/**
+ * send commute file to email
+ *
+ * @param email
+ * @param fileContent
+ */
+function sendCommuteFile(email, fileContent) {
+    $.ajax({
+        url: '/send-commute-file',
+        type: 'POST',
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        before: $('#cover-spin').show(0),
+        data: {
+            emailAddress: email,
+            fileContent: fileContent
+        },
+        success: function(response) {
+            $('#cover-spin').hide();
+            alert('Email sent successfully!');
+        },
+        error: function(error) {
+            $('#cover-spin').hide();
+            alert('Error sending email!');
+        }
+    });
+}
+
+

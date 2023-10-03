@@ -1,7 +1,8 @@
 <?php
 
+use App\Http\Controllers\CommuteController;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,6 +18,16 @@ Route::get('/', function () {
     return redirect('/distance-calculator');
 });
 
-Route::get('/distance-calculator', function () {
+Route::get('/distance-calculator', function (Request $request) {
     return view('distance-calculator');
 });
+
+Route::get('/commute-calculator', function () {
+    return view('commute-calculator');
+});
+
+Route::post('/process-commute', [CommuteController::class, 'processCommuteFile']);
+
+Route::post('/process-payment', [CommuteController::class, 'processPayment']);
+
+Route::post('/send-commute-file', [CommuteController::class, 'sendCommuteFile']);

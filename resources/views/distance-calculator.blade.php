@@ -20,6 +20,11 @@
                     Distance Calculator
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/commute-calculator">
+                    Commute Calculator
+                </a>
+            </li>
         </ul>
     </div>
 </nav>
@@ -59,4 +64,4 @@
     <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places&callback=initMap" async defer></script>
 </div>
 </body>
-</html>
+
