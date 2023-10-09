@@ -1,92 +1,93 @@
 @import url("//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css");
 
+/**
+Global CSS:Start
+ */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+body {
+    margin-top: 10px;
+    background-color: #F7F7F7;
+}
+
 .site-logo img {
     width: 115px;
 }
 
-#cover-spin {
-    position:fixed;
-    width:100%;
-    left:0;right:0;top:0;bottom:0;
-    background-color: rgba(255,255,255,0.7);
-    z-index:9999;
-    display:none;
-}
-
-@-webkit-keyframes spin {
-    from {-webkit-transform:rotate(0deg);}
-    to {-webkit-transform:rotate(360deg);}
-}
-
-@keyframes spin {
-    from {transform:rotate(0deg);}
-    to {transform:rotate(360deg);}
-}
-
-#cover-spin::after {
-    content:'';
-    display:block;
-    position:absolute;
-    left:48%;top:40%;
-    width:40px;height:40px;
-    border-style:solid;
-    border-color:black;
-    border-top-color:transparent;
-    border-width: 4px;
-    border-radius:50%;
-    -webkit-animation: spin .8s linear infinite;
-    animation: spin .8s linear infinite;
-}
-
-.panel {
-    padding: 10px;
-    background-color: #f5f5f5;
-}
-
-.distance-calculator-fields{
+.content {
     padding: 20px 20px 0 20px;
-}
-
-#map {
-    height: 500px;
-    width: 100%;
-}
-
-span#distanceDetails {
-    padding-top: 20px;
-}
-
-.choose-file-section {
-    text-align: center;
-}
-
-.choose-file-section {
-    background-color: grey;
-    padding-bottom: 50px;
     margin-top: 100px;
-    padding-top: 50px;
-    border: 1px solid gray;
-    border-radius: 15px;
 }
 
-#cardErrors {
-    padding-top: 10px;
-    color: red;
+.centered-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.site-blue-btn {
+    background-color: #99A9FF;
+    color: white;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 20%);
+    font-weight: bold;
+}
+
+.site-white-btn {
+    background-color: white;
+    color: #99A9FF !important;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 20%);
+    font-weight: bold;
+}
+
+.site-grey-btn {
+    background-color: #D9D9D9;
+    color: black;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 20%);
+    font-weight: bold;
+}
+
+.fa-file-excel-o {
+    color: green;
+}
+
+@media (max-width: 575px) {
+    .content {
+        padding-bottom: 11.5rem;
+    }
+}
+
+/**
+Navbar CSS:Start
+ */
+.navbar-container {
+    background-color: #f7f7f7 !important;
+    padding: 10px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1;
 }
 
 .navbar {
-    background-color: #d01e48!important;
+    background-color: #EFEEED !important;
 }
 
 .nav-link {
-    background-color: #dc919e;
-    padding: 20px!important;
-    border-radius: 10px;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    width: 200px;
 }
 
 .nav-item {
     margin: 10px;
+}
+
+.navbar-nav {
+    margin-left: 50px;
 }
 
 .navbar-icon-top .navbar-nav .nav-link > .fa {
@@ -111,134 +112,10 @@ span#distanceDetails {
     top: -10px;
 }
 
-.commute-calculator {
-    margin-top: 300px;
-    margin-bottom: 300px;
-}
-
-.commute-calculator .upload-file-text {
-    text-align: center;
-}
-
-.commute-calculator .file-upload{
-    display:block;
-    text-align:center;
-    font-family: Helvetica, Arial, sans-serif;
-    font-size: 12px;
-}
-
-.commute-calculator .file-upload .file-select{
-    display:block;
-    border: 2px solid #dce4ec;
-    color: #34495e;
-    cursor:pointer;
-    height:40px;
-    line-height:40px;
-    text-align:left;
-    background:#FFFFFF;
-    overflow:hidden;
-    position:relative;
-}
-
-.commute-calculator .file-upload .file-select .file-select-button{
-    background:#dce4ec;
-    padding:0 10px;
-    display:inline-block;
-    height:40px;
-    line-height:40px;
-}
-
-.commute-calculator .file-upload .file-select .file-select-name{
-    line-height:40px;
-    display:inline-block;
-    padding:0 10px;
-}
-
-.commute-calculator .file-upload .file-select:hover{
-    border-color:#34495e;
-    transition:all .2s ease-in-out;
-    -moz-transition:all .2s ease-in-out;
-    -webkit-transition:all .2s ease-in-out;
-    -o-transition:all .2s ease-in-out;
-}
-
-.commute-calculator .file-upload .file-select:hover .file-select-button{
-    background:#34495e;
-    color:#FFFFFF;
-    transition:all .2s ease-in-out;
-    -moz-transition:all .2s ease-in-out;
-    -webkit-transition:all .2s ease-in-out;
-    -o-transition:all .2s ease-in-out;
-}
-
-.commute-calculator .file-upload.active .file-select{
-    border-color:#3fa46a;
-    transition:all .2s ease-in-out;
-    -moz-transition:all .2s ease-in-out;
-    -webkit-transition:all .2s ease-in-out;
-    -o-transition:all .2s ease-in-out;
-}
-
-.commute-calculator .file-upload.active .file-select .file-select-button{
-    background:#3fa46a;
-    color:#FFFFFF;
-    transition:all .2s ease-in-out;
-    -moz-transition:all .2s ease-in-out;
-    -webkit-transition:all .2s ease-in-out;
-    -o-transition:all .2s ease-in-out;
-}
-
-.commute-calculator .file-upload .file-select input[type=file]{
-    z-index:100;
-    cursor:pointer;
-    position:absolute;
-    height:100%;
-    width:100%;
-    top:0;
-    left:0;
-    opacity:0;
-    filter:alpha(opacity=0);
-}
-
-.commute-calculator .file-upload .file-select.file-select-disabled{
-    opacity:0.65;
-}
-
-.commute-calculator .file-upload .file-select.file-select-disabled:hover{
-    cursor:default;
-    display:block;
-    border: 2px solid #dce4ec;
-    color: #34495e;
-    cursor:pointer;
-    height:40px;
-    line-height:40px;
-    margin-top:5px;
-    text-align:left;
-    background:#FFFFFF;
-    overflow:hidden;
-    position:relative;
-}
-
-.commute-calculator .file-upload .file-select.file-select-disabled:hover .file-select-button{
-    background:#dce4ec;
-    color:#666666;
-    padding:0 10px;
-    display:inline-block;
-    height:40px;
-    line-height:40px;
-}
-
-.commute-calculator .file-upload .file-select.file-select-disabled:hover .file-select-name{
-    line-height:40px;
-    display:inline-block;
-    padding:0 10px;
-}
-
 @media (min-width: 576px) {
     .navbar-icon-top.navbar-expand-sm .navbar-nav .nav-link {
         text-align: center;
         display: table-cell;
-        height: 70px;
         vertical-align: middle;
     }
 
@@ -256,15 +133,9 @@ span#distanceDetails {
 }
 
 @media (min-width: 768px) {
-    .commute-calculator {
-        margin-left: 100px;
-        margin-right: 100px;
-    }
-
     .navbar-icon-top.navbar-expand-md .navbar-nav .nav-link {
         text-align: center;
         display: table-cell;
-        height: 70px;
         vertical-align: middle;
     }
 
@@ -281,11 +152,16 @@ span#distanceDetails {
     }
 }
 
+@media (max-width: 991px) {
+    .nav-link {
+        padding-left: 30px !important;
+    }
+}
+
 @media (min-width: 992px) {
     .navbar-icon-top.navbar-expand-lg .navbar-nav .nav-link {
         text-align: center;
         display: table-cell;
-        height: 70px;
         vertical-align: middle;
     }
 
@@ -306,7 +182,6 @@ span#distanceDetails {
     .navbar-icon-top.navbar-expand-xl .navbar-nav .nav-link {
         text-align: center;
         display: table-cell;
-        height: 70px;
         vertical-align: middle;
     }
 
@@ -323,8 +198,173 @@ span#distanceDetails {
     }
 }
 
-@media (min-width: 992px) and (max-width: 1275px) {
-    .find-distance {
-        margin-left: 65px;
+/**
+Navbar CSS:End
+ */
+
+/**
+Loader CSS:Start
+ */
+#cover-spin {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 9999;
+    display: none;
+}
+
+@-webkit-keyframes spin {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
     }
 }
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#cover-spin::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 48%;
+    top: 40%;
+    width: 40px;
+    height: 40px;
+    border-style: solid;
+    border-color: black;
+    border-top-color: transparent;
+    border-width: 4px;
+    border-radius: 50%;
+    -webkit-animation: spin .8s linear infinite;
+    animation: spin .8s linear infinite;
+}
+
+/**
+Loader CSS:End
+ */
+
+/**
+Footer CSS:Start
+ */
+footer {
+    text-align: center;
+    font-weight: bold;
+    background-color: #E2E2E2;
+    left: 0;
+    bottom: 0;
+    position: fixed;
+    width: 100%;
+}
+
+footer a {
+    margin: 20px;
+    color: #3C6BFE;
+}
+
+@media (max-width: 374px) {
+    footer {
+        display: grid;
+    }
+}
+
+/**
+Footer CSS:End
+ */
+
+/**
+Global CSS:End
+ */
+
+/**
+Distance Calculator CSS:Start
+ */
+.distance-calculator #map {
+    height: 500px;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.distance-calculator #distanceDetails {
+    display: none;
+    background-color: white;
+    padding: 10px;
+}
+
+@media (max-width: 991px) {
+    .distance-calculator .distance-tool-btn {
+        margin-bottom: 5px;
+    }
+}
+
+/**
+Distance Calculator CSS:End
+ */
+
+/**
+Commute Calculator CSS:Start
+ */
+.commute-calculator #excelImage {
+    max-width: 100%;
+    height: auto;
+}
+
+.commute-calculator .file-step-header {
+    color: #556BFC;
+    font-weight: bold;
+}
+
+.commute-calculator .number-of-rows {
+    display: none;
+    font-weight: bold;
+    color: green;
+}
+
+.commute-calculator .process-commute-btn {
+    display: none;
+}
+
+.commute-calculator .step-2, .commute-calculator .step-3 {
+    display: none;
+}
+
+.commute-calculator .download-file-section {
+    background-color: white;
+}
+
+.commute-calculator .download-btn {
+    color: white;
+    font-weight: bold;
+    background-color: #6FCA72;
+}
+
+.commute-calculator #cardElement {
+    width: 30%;
+}
+
+.commute-calculator #cardErrors {
+    padding-top: 10px;
+    color: red;
+}
+
+.commute-calculator .file-upload, .commute-calculator #commutePaymentForm, .commute-calculator .download-file-section {
+    background-color: white;
+    padding: 20px;
+}
+
+/**
+Commute Calculator CSS:End
+ */

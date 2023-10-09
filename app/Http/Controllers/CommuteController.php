@@ -2,16 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\SendEmail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Stripe\Stripe;
 use Stripe\Charge;
 use Illuminate\Support\Facades\Mail;
-use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 
 class CommuteController extends Controller
 {
+    /**
+     * get addresses count
+     *
+     * @return void
+     */
+    public function getAddressesCount() {
+        $response = array();
+        if(isset($_FILES['commuteFile']) && !empty($_FILES['commuteFile']['tmp_name'])) {
+            $file = $_FILES['commuteFile']['tmp_name'];
+            if (fopen($file, "r") !== FALSE) {
+                $records = $this->getRecordsCount(fopen($file, "r"));
+                $response['success'] = true;
+                $response['records_count'] = $records;
+            } else {
+                $response['error'] = "Error opening file.";
+            }
+        } else {
+            $response['error'] = "No file uploaded.";
+        }
+        if(isset($response['error'])) {
+            http_response_code(400);// Set HTTP status code to indicate a bad request
+            echo json_encode($response);
+            exit();
+        } else {
+            echo json_encode($response);
+        }
+    }
+
     /**
      * process commute file
      *
@@ -80,13 +106,15 @@ class CommuteController extends Controller
                 $from = urlencode($data[0]);
                 $to = urlencode($data[1]);
 
-                list($distance, $duration) = $this->getTravelInfo($from, $to);
+                list($distanceKm, $distanceMi, $timeHrs, $timeMns) = $this->getTravelInfo($from, $to);
 
-                $data[] = $distance;
-                $data[] = $duration;
+                $data[] = $distanceKm;
+                $data[] = $distanceMi;
+                $data[] = $timeHrs;
+                $data[] = $timeMns;
                 $output[] = $data;
             } else {
-                $output[] = ['From', 'To', 'Distance', 'Time'];
+                $output[] = ['From', 'To', 'Distance in Kilometers', 'Distance in Miles', 'Travel Hours', 'Travel Minutes'];
             }
             $i ++;
         }
@@ -120,12 +148,15 @@ class CommuteController extends Controller
         $data = json_decode($response, true);
 
         if ($data['status'] == 'OK') {
-            $distance = $data['rows'][0]['elements'][0]['distance']['text'];
-            $duration = $data['rows'][0]['elements'][0]['duration']['text'];
-
-            return [$this->convertDistance($this->extractNumericValue($distance), (str_contains($distance, 'km') ? "km" : str_contains($distance, 'mi')) ? "mi" : ""), $duration];
+            $distance = isset($data['rows'][0]['elements'][0]['distance']) ? $data['rows'][0]['elements'][0]['distance']['text'] : false;
+            $duration = isset($data['rows'][0]['elements'][0]['duration']) ? $data['rows'][0]['elements'][0]['duration']['text'] : false;
+            $distanceKm = $distance ? (str_contains($distance, 'km') ? $distance : $this->convertDistance($this->extractNumericValue($distance), "km")) : null;
+            $distanceMi = $distance ? (str_contains($distance, 'mi') ? $distance : $this->convertDistance($this->extractNumericValue($distance), "mi")) : null;
+            $timeHrs = $duration ? $this->getDuration($duration, 'hours') : null;
+            $timeMns = $duration ? $this->getDuration($duration, 'minutes') : null;
+            return [$distanceKm, $distanceMi, $timeHrs, $timeMns];
         } else {
-            return [null, null];
+            return [null, null, null, null];
         }
     }
 
@@ -140,7 +171,7 @@ class CommuteController extends Controller
     }
 
     /**
-     * get distance in km if in mi and mi if in km
+     * convert kilometers to miles or miles to kilometers
      *
      * @param $distance
      * @param $unit
@@ -149,15 +180,40 @@ class CommuteController extends Controller
     function convertDistance($distance, $unit) {
         if ($unit == 'km') {
             // Convert miles to kilometers
-            return round($distance * 1.60934, 2)." km, ".$distance." mi";
+            return round($distance * 1.60934, 2)." km,";
         } elseif ($unit == 'mi') {
             // Convert kilometers to miles
-            return $distance." km, ".round($distance * 0.621371, 2)." mi";
+            return round($distance * 0.621371, 2)." mi";
         } else {
             return "Invalid unit ". " ".$unit;
         }
     }
 
+    /**
+     * get hours or minutes from a duration string
+     *
+     * @param string $duration
+     * @param string $unit
+     * @return int
+     */
+    function getDuration($duration, $unit) {
+        $parts = explode(' ', $duration);
+
+        if ($unit == 'hours') {
+            return (int)$parts[0];
+        } elseif ($unit == 'minutes') {
+            return (int)$parts[2];
+        } else {
+            return "Invalid unit: " . $unit;
+        }
+    }
+
+    /**
+     * process stripe payment
+     *
+     * @param Request $request
+     * @return void
+     */
     public function processPayment(Request $request)
     {
         Stripe::setApiKey(config('services.stripe.secret'));

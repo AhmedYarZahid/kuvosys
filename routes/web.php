@@ -26,6 +26,8 @@ Route::get('/commute-calculator', function () {
     return view('commute-calculator');
 });
 
+Route::post('/get-addresses-count', [CommuteController::class, 'getAddressesCount']);
+
 Route::post('/process-commute', [CommuteController::class, 'processCommuteFile']);
 
 Route::post('/process-payment', [CommuteController::class, 'processPayment']);

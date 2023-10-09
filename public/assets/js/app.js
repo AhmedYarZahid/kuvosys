@@ -16,12 +16,6 @@ var markers = [];
 var directionsDisplay;
 
 /**
- * commute payment modal original content
- */
-var commutePaymentModalOriginalContent;
-
-
-/**
  * initialize map, centered at users' location
  */
 function initMap() {
@@ -153,7 +147,7 @@ function calculateAndDisplayRoute() {
                 var unit = distanceText.split(' ')[1];
                 var distanceValue = parseFloat(distanceText.replace(/,/g, ''));
                 var convertedDistance = convertDistance(distanceValue, unit);
-                $('span#distanceDetails').html('<b>Travel Distance:</b> ' + (unit === "km" ? (directionsData.distance.text + ", " + convertedDistance) : (convertedDistanceconvertedDistance + ", " + directionsData.distance.text)) + '<br> <b>Estimated Time Duration:</b> ' + directionsData.duration.text);
+                $('#distanceDetails').html('<b>Travel Distance:</b> ' + (unit === "mi" ? (directionsData.distance.text + " | " + convertedDistance) : (convertedDistance + " | " + directionsData.distance.text)) + '<br> <b>Estimated Time Duration:</b> ' + directionsData.duration.text).show();
             } else {
                 directionsDisplay.setMap(null);
                 alert('Directions request from ' + start.toUrlValue(6) + ' to ' + end.toUrlValue(6) + ' failed: ' + status + '.');
@@ -181,30 +175,43 @@ function convertDistance(distance, unit) {
     }
 }
 
-$(document).ready(function() {
-    /**
-     * handle commute file change
-     */
-    $('#commuteFile').bind('change', function () {
-        var filename = $("#commuteFile").val();
-        if (/^\s*$/.test(filename)) {
-            $(".commute-calculator .file-upload").removeClass('active');
-            $(".commute-calculator #noFile").text("No file chosen...");
-        }
-        else {
-            $(".commute-calculator .file-upload").addClass('active');
-            $(".commute-calculator #noFile").text(filename.replace("C:\\fakepath\\", ""));
+/**
+ * get addresses count
+ */
+function getAddressesCount() {
+    var formData = new FormData(document.getElementById('commuteForm'));
+    $.ajax({
+        url: '/get-addresses-count',
+        headers: {'X-CSRF-TOKEN': $('#commuteForm meta[name="csrf-token"]').attr('content')},
+        before: $('#cover-spin').show(0),
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+            $('#cover-spin').hide();
+            response = JSON.parse(response);
+            $(".step-1 #count").html(response.records_count);
+            $(".step-1 .number-of-rows").show();
+            $(".process-commute-btn").show();
+        },
+        error: function(xhr, status, error) {
+            $('#cover-spin').hide();
+            var errorMessage = JSON.parse(xhr.responseText).error;
+            alert("Error: " + errorMessage);
+            $(".step-1 .number-of-rows").hide();
+            $(".step-2").hide();
+            resetDownloadSection();
         }
     });
-
-    commutePaymentModalOriginalContent = $('#commutePaymentModal').html();
-});
+}
 
 /**
  * submit commute file
  */
 function submitCommute() {
-    loadStripeModal();
+    resetDownloadSection();
+    loadStripe();
     var formData = new FormData(document.getElementById('commuteForm'));
     $.ajax({
         url: '/process-commute',
@@ -223,15 +230,11 @@ function submitCommute() {
                 parsedJSON = null;
             }
             if(parsedJSON === null) {
-                var link = document.createElement('a');
-                link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response);
-                link.download = 'output_file.csv';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                showDownloadSection(response);
             } else {
-                $("#amountToPay").html("Please pay <b>" + parsedJSON.charge + " USD</b> amount to proceed.");
-                $("#commutePaymentModal").modal("show");
+                $("#amountToPay").html("<b>Based on the number of rows, your total is $" + parsedJSON.charge + "<br> Please complete the payment to generate this report.</b> ");
+                $(".submit-payment-btn").prop('disabled', false);
+                $(".step-2").show();
             }
         },
         error: function(xhr, status, error) {
@@ -243,13 +246,46 @@ function submitCommute() {
 }
 
 /**
- * reload stripe modal
+ * show download section
+ *
+ * @param data
  */
-function loadStripeModal() {
-    $('#commutePaymentModal').html(commutePaymentModalOriginalContent);
-    loadStripe();
+function showDownloadSection(data) {
+    var link = document.createElement('a');
+    link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(data);
+    link.download = 'output_file.csv';
+    var icon = document.createElement('i');
+    icon.classList.add('ml-1', 'fa', 'fa-download');
+    link.textContent = "DOWNLOAD";
+    link.classList.add('btn', 'download-btn');
+    link.appendChild(icon);
+    var html = "<div class='col-sm-6 download-link centered-content'></div>" +
+        "<div class='col-sm-6'>" +
+        "<b>Email it to me</b>" +
+        "<form id='commuteEmailForm'>" +
+        "<div class='row'>" +
+        "<div class='col-sm-9'>" +
+        "<input id='customerEmailAddress' class='form-control'>" +
+        "</div>" +
+        "<div class='col-sm-3'>" +
+        "<button type='button' class='btn site-blue-btn' onclick='sendCommuteFile($(\"#customerEmailAddress\").val(), " + JSON.stringify(data) + ")'>Send</button>" +
+        "</div>" +
+        "</div>" +
+        "</form>" +
+        "</div>";
+    $(".step-3 .download-file-section").html(html);
+    $(".step-3 .download-link").append(link);
+    $(".step-3").show();
 }
 
+/**
+ * reset download section
+ */
+function resetDownloadSection() {
+    $(".step-3 .download-file-section").empty();
+    $(".step-3").hide();
+
+}
 /**
  * submit payment
  */
@@ -274,6 +310,7 @@ function loadStripe() {
             if (result.error) {
                 errorElement.text(result.error.message);
             } else {
+                errorElement.text("");
                 stripeTokenHandler(result.token);
             }
         });
@@ -300,14 +337,8 @@ function stripeTokenHandler(token) {
         processData: false,
         success: function(response) {
             $('#cover-spin').hide();
-            var link = document.createElement('a');
-            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response);
-            link.download = 'output_file.csv';
-            link.textContent = "Download";
-            $(".submit-payment-btn").hide();
-            $("#commutePaymentModal .modal-title").html("<b>Payment Successful!</b>")
-            var message = "Download your file by clicking on the link below or send it to an email address: <form id='commuteEmailForm'><input id='customerEmailAddress'> <button type='button' class='btn btn-primary' onclick='sendCommuteFile($(\"#customerEmailAddress\").val(), " + JSON.stringify(response) + ")'>Send</button></form>";
-            $("#commutePaymentModal .modal-body").html(message).append(link);
+            $(".submit-payment-btn").prop("disabled", true);
+            showDownloadSection(response);
         },
         error: function(xhr, status, error) {
             $('#cover-spin').hide();
