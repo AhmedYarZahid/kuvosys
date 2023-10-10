@@ -351,10 +351,6 @@ Commute Calculator CSS:Start
     background-color: #6FCA72;
 }
 
-.commute-calculator #cardElement {
-    width: 30%;
-}
-
 .commute-calculator #cardErrors {
     padding-top: 10px;
     color: red;
@@ -365,6 +361,22 @@ Commute Calculator CSS:Start
     padding: 20px;
 }
 
+.commute-calculator .accept-terms-link {
+    color: #3C6BFE;
+    font-weight: bold;
+}
+
+@media (min-width: 768px) {
+    .commute-calculator .card-element-section {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .commute-calculator #cardElement {
+        width: 30%;
+    }
+}
 /**
 Commute Calculator CSS:End
  */

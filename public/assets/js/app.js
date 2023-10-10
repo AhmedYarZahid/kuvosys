@@ -290,7 +290,11 @@ function resetDownloadSection() {
  * submit payment
  */
 function submitPayment() {
-    $("#commutePaymentForm").submit()
+    if($("#acceptTerms").is(":checked")) {
+        $("#commutePaymentForm").submit()
+    } else {
+        alert("Please accept terms first!")
+    }
 }
 
 /**

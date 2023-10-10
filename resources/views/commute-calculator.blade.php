@@ -71,12 +71,14 @@
             <div id="amountToPay"></div>
             <div class="form-group">
                 <label for="cardElement">Credit or debit card</label>
-                <div class="centered-content">
+                <div class="card-element-section">
                     <div id="cardElement"></div>
                 </div>
                 <div id="cardErrors" role="alert"></div>
             </div>
-            <button type="button" class="btn site-blue-btn submit-payment-btn" onclick="submitPayment()">Submit Payment</button>
+
+            <input type="checkbox" id="acceptTerms">&nbsp;<b>Yes, I accept <a class="accept-terms-link" href="">Terms</a></b><br>
+            <button type="button" class="btn site-blue-btn submit-payment-btn mt-2" onclick="submitPayment()">Submit Payment</button>
         </form>
         <hr>
     </div>
