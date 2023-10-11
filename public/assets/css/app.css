@@ -327,10 +327,11 @@ Commute Calculator CSS:Start
     font-weight: bold;
 }
 
-.commute-calculator .number-of-rows {
+.commute-calculator .number-of-rows, .commute-calculator #emailMessage {
     display: none;
     font-weight: bold;
     color: green;
+    padding-top: 5px;
 }
 
 .commute-calculator .process-commute-btn {

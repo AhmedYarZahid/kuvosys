@@ -266,6 +266,7 @@ function showDownloadSection(data) {
         "<div class='row'>" +
         "<div class='col-sm-9'>" +
         "<input id='customerEmailAddress' class='form-control'>" +
+        "<p id='emailMessage'></p>" +
         "</div>" +
         "<div class='col-sm-3'>" +
         "<button type='button' class='btn site-blue-btn' onclick='sendCommuteFile($(\"#customerEmailAddress\").val(), " + JSON.stringify(data) + ")'>Send</button>" +
@@ -370,7 +371,7 @@ function sendCommuteFile(email, fileContent) {
         },
         success: function(response) {
             $('#cover-spin').hide();
-            alert('Email sent successfully!');
+            $("#emailMessage").html('Email sent successfully!').show().delay(5000).fadeOut();
         },
         error: function(error) {
             $('#cover-spin').hide();
