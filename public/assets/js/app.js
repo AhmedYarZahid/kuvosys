@@ -230,6 +230,7 @@ function submitCommute() {
                 parsedJSON = null;
             }
             if(parsedJSON === null) {
+                $(".step-2").hide();
                 showDownloadSection(response);
             } else {
                 $("#amountToPay").html("<b>Based on the number of rows, your total is $" + parsedJSON.charge + "<br> Please complete the payment to generate this report.</b> ");
