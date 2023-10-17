@@ -225,9 +225,9 @@ class CommuteController extends Controller
         $parts = explode(' ', $duration);
 
         if ($unit == 'hours') {
-            return (int)$parts[0];
+            return $parts[1] == "mins" ? 0 : (int)$parts[0];
         } elseif ($unit == 'minutes') {
-            return (int)$parts[2];
+            return $parts[1] == "mins" ? (int)$parts[0] : (int)$parts[2];
         } else {
             return "Invalid unit: " . $unit;
         }
