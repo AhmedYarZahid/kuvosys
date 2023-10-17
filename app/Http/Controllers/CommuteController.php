@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Reader\Exception;
 use Stripe\Stripe;
 use Stripe\Charge;
 use Illuminate\Support\Facades\Mail;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class CommuteController extends Controller
 {
@@ -14,13 +16,14 @@ class CommuteController extends Controller
      * get addresses count
      *
      * @return void
+     * @throws Exception
      */
     public function getAddressesCount() {
         $response = array();
         if(isset($_FILES['commuteFile']) && !empty($_FILES['commuteFile']['tmp_name'])) {
             $file = $_FILES['commuteFile']['tmp_name'];
             if (fopen($file, "r") !== FALSE) {
-                $records = $this->getRecordsCount(fopen($file, "r"));
+                $records = $this->getRecordsCount($file);
                 $response['success'] = true;
                 $response['records_count'] = $records;
             } else {
@@ -42,13 +45,14 @@ class CommuteController extends Controller
      * process commute file
      *
      * @return void
+     * @throws Exception
      */
     public function processCommuteFile() {
         $response = array();
         if(isset($_FILES['commuteFile']) && !empty($_FILES['commuteFile']['tmp_name'])) {
             $file = $_FILES['commuteFile']['tmp_name'];
             if (fopen($file, "r") !== FALSE) {
-                $records = $this->getRecordsCount(fopen($file, "r"));
+                $records = $this->getRecordsCount($file);
                 $response['success'] = true;
                 $response['request_payment'] = true;
                 if($records > 50 && $records <= 500) {
@@ -79,15 +83,23 @@ class CommuteController extends Controller
     /**
      * get records count
      *
-     * @param $handle
+     * @param $file
      * @return int
+     * @throws Exception
      */
-    private function getRecordsCount($handle) {
+    private function getRecordsCount($file) {
+        $inputFileType = IOFactory::identify($file);
+        $reader = IOFactory::createReader($inputFileType);
+        $spreadsheet = $reader->load($file);
+        $worksheet = $spreadsheet->getActiveSheet();
+
         $rowCount = 0;
-        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+
+        foreach ($worksheet->getRowIterator() as $row) {
             $rowCount++;
         }
-        return $rowCount - 1;
+
+        return $rowCount - 1; // Subtract 1 to exclude header row
     }
 
     /**
@@ -95,31 +107,44 @@ class CommuteController extends Controller
      *
      * @param $file
      * @return void
+     * @throws Exception
      */
     private function processRoutes($file) {
         $output = [];
 
-        $handle = fopen($file, "r");
-        $i = 0;
-        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-            if($i) {
-                $from = urlencode($data[0]);
-                $to = urlencode($data[1]);
+        $inputFileType = IOFactory::identify($file);
+        $reader = IOFactory::createReader($inputFileType);
 
-                list($distanceKm, $distanceMi, $timeHrs, $timeMns) = $this->getTravelInfo($from, $to);
+        $spreadsheet = $reader->load($file);
+        $worksheet = $spreadsheet->getActiveSheet();
 
-                $data[] = $distanceKm;
-                $data[] = $distanceMi;
-                $data[] = $timeHrs;
-                $data[] = $timeMns;
-                $output[] = $data;
-            } else {
-                $output[] = ['From', 'To', 'Distance in Kilometers', 'Distance in Miles', 'Travel Hours', 'Travel Minutes'];
+        $isFirstRow = true; // Flag to identify the first row
+
+        foreach ($worksheet->getRowIterator() as $row) {
+            $rowData = [];
+            foreach ($row->getCellIterator() as $cell) {
+                $rowData[] = $cell->getValue();
             }
-            $i ++;
-        }
 
-        fclose($handle);
+            if ($isFirstRow) {
+                $output[] = ['From', 'To', 'Distance in Kilometers', 'Distance in Miles', 'Travel Hours', 'Travel Minutes'];
+                $isFirstRow = false;
+            } else if (!empty($rowData)) {
+                if (!empty($rowData[0]) && !empty($rowData[1])) {
+                    $from = urlencode($rowData[0]);
+                    $to = urlencode($rowData[1]);
+
+                    list($distanceKm, $distanceMi, $timeHrs, $timeMns) = $this->getTravelInfo($from, $to);
+
+                    $rowData[] = $distanceKm;
+                    $rowData[] = $distanceMi;
+                    $rowData[] = $timeHrs;
+                    $rowData[] = $timeMns;
+
+                    $output[] = $rowData;
+                }
+            }
+        }
 
         // Output the CSV data directly
         header('Content-Type: text/csv');
