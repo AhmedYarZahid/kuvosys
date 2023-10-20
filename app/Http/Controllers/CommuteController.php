@@ -56,11 +56,11 @@ class CommuteController extends Controller
                 $response['success'] = true;
                 $response['request_payment'] = true;
                 if($records > 50 && $records <= 500) {
-                    $response['charge'] = 0.015 * $records + 1.00;
+                    $response['charge'] = number_format(0.015 * $records + 1.00, 2);
                 } else if($records > 500 && $records <= 1000) {
-                    $response['charge'] = 0.014 * $records + 0.75;
+                    $response['charge'] = number_format(0.014 * $records + 0.75, 2);
                 } else if($records > 1000) {
-                    $response['charge'] = 0.013 * $records + 0.50;
+                    $response['charge'] = number_format(0.013 * $records + 0.50, 2);
                 } else {
                     $response['request_payment'] = false;
                     $this->processRoutes($file);
@@ -189,10 +189,18 @@ class CommuteController extends Controller
      * get numeric value from distance text
      *
      * @param $str
-     * @return array|string|string[]|null
+     * @return float|null
      */
     function extractNumericValue($str) {
-        return preg_replace('/[^0-9]/', '', $str);
+        // Use regular expression to extract numeric value
+        preg_match('/[\d,]+(\.\d+)?/', $str, $matches);
+
+        // Check if a match was found
+        if(isset($matches[0])) {
+            return floatval(str_replace(',', '', $matches[0])); // Convert the matched value to float after removing commas
+        } else {
+            return null; // Return null if no numeric value was found
+        }
     }
 
     /**
@@ -208,7 +216,7 @@ class CommuteController extends Controller
             return round($distance * 1.60934, 2)." km,";
         } elseif ($unit == 'mi') {
             // Convert kilometers to miles
-            return round($distance * 0.621371, 2)." mi";
+            return round($distance / 1.60934, 2)." mi";
         } else {
             return "Invalid unit ". " ".$unit;
         }
@@ -227,7 +235,7 @@ class CommuteController extends Controller
         if ($unit == 'hours') {
             return $parts[1] == "mins" ? 0 : (int)$parts[0];
         } elseif ($unit == 'minutes') {
-            return $parts[1] == "mins" ? (int)$parts[0] : (int)$parts[2];
+            return $parts[1] == "mins" ? (int)$parts[0] : (isset($parts[2]) ? (int)$parts[2] : 0);
         } else {
             return "Invalid unit: " . $unit;
         }
@@ -244,12 +252,12 @@ class CommuteController extends Controller
         Stripe::setApiKey(config('services.stripe.secret'));
 
         $token = $request->input('stripeToken');
-        $amount = 1000; // Amount in cents
+        $amount = $request->input('amount');
 
         $response = array();
         try {
             Charge::create([
-                'amount' => $amount,
+                'amount' => $amount * 100,
                 'currency' => 'usd',
                 'description' => 'Example Charge',
                 'source' => $token,

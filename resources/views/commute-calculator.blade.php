@@ -74,6 +74,7 @@
                 <div class="card-element-section">
                     <div id="cardElement"></div>
                 </div>
+                <input type="hidden" name="amount">
                 <div id="cardErrors" role="alert"></div>
             </div>
 

@@ -234,6 +234,7 @@ function submitCommute() {
                 showDownloadSection(response);
             } else {
                 $("#amountToPay").html("<b>Based on the number of rows, your total is $" + parsedJSON.charge + "<br> Please complete the payment to generate this report.</b> ");
+                $("#commutePaymentForm input[name='amount']").val(parsedJSON.charge);
                 $(".submit-payment-btn").prop('disabled', false);
                 $(".step-2").show();
             }
@@ -329,14 +330,15 @@ function loadStripe() {
  * @param token
  */
 function stripeTokenHandler(token) {
-    var form = $('#commutePaymentForm');
+    var commutePaymentForm = $('#commutePaymentForm');
     var commuteForm = $('#commuteForm')[0];
     var formData = new FormData(commuteForm);
     formData.append('stripeToken', token.id);
+    formData.append('amount', $("#commutePaymentForm input[name='amount']").val());
     $('#cover-spin').show();
     $.ajax({
         type: 'POST',
-        url: form.attr('action'), // Assuming your form has the correct action URL
+        url: commutePaymentForm.attr('action'), // Assuming your form has the correct action URL
         headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
         data: formData,
         contentType: false,
