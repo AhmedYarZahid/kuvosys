@@ -127,17 +127,18 @@ class CommuteController extends Controller
             }
 
             if ($isFirstRow) {
-                $output[] = ['From', 'To', 'Distance in Kilometers', 'Distance in Miles', 'Travel Hours', 'Travel Minutes'];
+                $output[] = ['From', 'To', 'Distance in Kilometers', 'Distance in Miles', 'Travel Days', 'Travel Hours', 'Travel Minutes'];
                 $isFirstRow = false;
             } else if (!empty($rowData)) {
                 if (!empty($rowData[0]) && !empty($rowData[1])) {
                     $from = urlencode($rowData[0]);
                     $to = urlencode($rowData[1]);
 
-                    list($distanceKm, $distanceMi, $timeHrs, $timeMns) = $this->getTravelInfo($from, $to);
+                    list($distanceKm, $distanceMi, $timeDays, $timeHrs, $timeMns) = $this->getTravelInfo($from, $to);
 
                     $rowData[] = $distanceKm;
                     $rowData[] = $distanceMi;
+                    $rowData[] = $timeDays;
                     $rowData[] = $timeHrs;
                     $rowData[] = $timeMns;
 
@@ -177,9 +178,8 @@ class CommuteController extends Controller
             $duration = isset($data['rows'][0]['elements'][0]['duration']) ? $data['rows'][0]['elements'][0]['duration']['text'] : false;
             $distanceKm = $distance ? (str_contains($distance, 'km') ? $distance : $this->convertDistance($this->extractNumericValue($distance), "km")) : null;
             $distanceMi = $distance ? (str_contains($distance, 'mi') ? $distance : $this->convertDistance($this->extractNumericValue($distance), "mi")) : null;
-            $timeHrs = $duration ? $this->getDuration($duration, 'hours') : null;
-            $timeMns = $duration ? $this->getDuration($duration, 'minutes') : null;
-            return [$distanceKm, $distanceMi, $timeHrs, $timeMns];
+            $time = $this->convertTravelTimeToDaysHoursMinutes($duration);
+            return [$distanceKm, $distanceMi, $time['days'], $time['hours'], $time['minutes']];
         } else {
             return [null, null, null, null];
         }
@@ -223,22 +223,31 @@ class CommuteController extends Controller
     }
 
     /**
-     * get hours or minutes from a duration string
+     * convert travel time to days, hours and minutes
      *
-     * @param string $duration
-     * @param string $unit
-     * @return int
+     * @param $travelTime
+     * @return array
      */
-    function getDuration($duration, $unit) {
-        $parts = explode(' ', $duration);
+    function convertTravelTimeToDaysHoursMinutes($travelTime) {
+        $matches = [];
+        preg_match_all('/(\d+)\s*(day|hour|min)/', $travelTime, $matches);
 
-        if ($unit == 'hours') {
-            return $parts[1] == "mins" ? 0 : (int)$parts[0];
-        } elseif ($unit == 'minutes') {
-            return $parts[1] == "mins" ? (int)$parts[0] : (isset($parts[2]) ? (int)$parts[2] : 0);
-        } else {
-            return "Invalid unit: " . $unit;
+        $days = 0;
+        $hours = 0;
+        $minutes = 0;
+
+        foreach ($matches[2] as $index => $unit) {
+            $value = (int)$matches[1][$index];
+            if ($unit == 'day') {
+                $days += $value;
+            } elseif ($unit == 'hour') {
+                $hours += $value;
+            } elseif ($unit == 'min') {
+                $minutes += $value;
+            }
         }
+
+        return ['days' => $days, 'hours' => $hours, 'minutes' => $minutes];
     }
 
     /**
